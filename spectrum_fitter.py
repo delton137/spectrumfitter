@@ -1,23 +1,28 @@
 from pylab import *
 from scipy import optimize 
 
-
 class Debye:
 	"""Debye lineshape object.
 	
-	Note: the tau parameter is assumed to have units of ps and frequencies are assumed to be in cm^-1
+	Note: the wD parameter is assumed to be in units of cm^-1
 	"""
 
 	def __init__(self,params=[1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="unnamed"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
-		self.pnames = ["f", "tau"]
+		self.pnames = ["f", "wD"]
 		self.type = "Debye"
 		 
 	def __call__(self, w):
-		convf = (2*3.14159)/33.35641 #ps -> cm with a 2 pi
-		return self.p[0]*w*convf*self.p[1]/(1 + w**2*(convf*self.p[1])**2) 
+		#convf = (2*3.14159)/33.4 #ps -> cm with a 2 pi
+		return self.p[0]*w*self.p[1]/(self.p[1]**2 + w**2) 
+	
+	def get_freq(self): 
+		return self.p[1]
+	
+	def get_abs_freq(self):
+		return self.p[1]
        
 class DHO:
 	"""Damped harmonic oscillator object"""
@@ -26,23 +31,35 @@ class DHO:
 		self.bounds = bounds
 		self.name = name
 		self.pnames = ["f", "wT","gamma"]
-		self.type = "Damped Harmonic Oscillator"
+		self.type = "DHO"
 
 		 
 	def __call__(self, w):
 		return self.p[0]*self.p[1]**2*self.p[2]*w/( (self.p[1]**2 - w**2)**2 + w**2*self.p[2]**2 ) 
 	
+	def get_freq(self):
+		return self.p[1]
+	
+	def get_abs_freq(self):
+		return sqrt( self.p[1]**2 + self.p[2]**2 ) 
+	
 class BRO:
-	"""Briet-Rabbi oscillator"""
+	"""Briet-Rabbi oscillator (also called van Vleck-Weisskopf lineshape)"""
 	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="unnamed"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
 		self.pnames = ["f", "wT","gamma"]
-		self.type = "Breit-Rabbi"
+		self.type = "BRO"
 		 
 	def __call__(self, w):
-		return .5*self.p[0]*self.p[1]**2*self.p[2]*w*( 1/((self.p[1]**2 - w**2)**2 + w**2*self.p[2]**2)  + 1.00/((self.p[1]**2 + w**2)**2 + self.p[2]**2) ) 
+		return self.p[0]*2*self.p[2]*w*( 1/((self.p[1] - w)**2 + self.p[2]**2)  + 1.00/((self.p[1] + w)**2 +  self.p[2]**2) ) 
+	
+	def get_freq(self):
+		return self.p[1]
+	
+	def get_abs_freq(self):
+		return sqrt( self.p[1]**2 + self.p[2]**2 ) 
 	
 class constant:
 	"""this "lineshape" object is merely a constant term"""
@@ -103,10 +120,15 @@ class spectralmodel:
 		print "RMS error = ", self.RMS_error
 		for lineshape in self.lineshapes:
 			print lineshape.name, lineshape.p
+			
+	def list(self):
+		"""Write out info about all of the parameters in the model """
+		print "RMS error = ", self.RMS_error
+		for lineshape in self.lineshapes:
+			print lineshape.name, lineshape.p
 					
 	def fit_model(self, dataX, dataY):
-		dataX = dataX
-		dataY = dataY
+
 		def diffsq(params):
 			"""Wrapper function for differential_evolution()
 	
@@ -125,5 +147,5 @@ class spectralmodel:
 		#optimize.fmin_tnc(diffsq, params, fprime=None,approx_grad=True,args=params,bounds=b,epsilon=1e-08,)
 		optimize.differential_evolution(diffsq,b) #perform optimization 
 		
-		self.RMS_error = sqrt(diffsq(params)/len(dataX)) #Store RMS error
+		#self.RMS_error = sqrt(diffsq(params)/len(dataX)) #Store RMS error #problematic line!!!!!!!!!!!
 
