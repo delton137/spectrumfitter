@@ -1,129 +1,129 @@
 from pylab import *
-from scipy import optimize
-
-class Parameter:
-    def __init__(self, value, bounds=(-inf,+inf),name="unnamed"):
-            self.value = value
-            self.bounds = bounds
-	    self.name = name
-
-    def set(self, value):
-            self.value = value
-
-    def __call__(self):
-            return self.value
-
-#class model
-    #def __init__(self,numDebye,numDHO)
-	#self.numDebye = numDebye
-	#self.numDHO = numDHO
-	#self.lineshapes =   
-
-    #def eval(w):
-	#output = 0 
-      	#for lineshape in lineshapes: 
-	  #output = output + lineshape()
-	    
-
-def fit(function, parameters, x, y):
-    
-    def f(params):
-        i = 0
-        for p in parameters:
-            p.set(params[i])
-            i += 1
-        return dot(y-function(x),y-function(x)) 
-
-    if x is None: x = arange(y.shape[0])
-    
-    params = array([param() for param in parameters])
-    b = [param.bounds for param in parameters]
-        
-    #optimize.fmin_tnc(f, p0, fprime=None,approx_grad=True,args=p0,bounds=b,epsilon=1e-08,)
-    optimize.differential_evolution(f,b)
-  
-    
-   
-cspeed = 3*10**10
-data = loadtxt(fname='Siegelstein.RI')
-
-maxw = 1500
-omegas = data[0:maxw,0] #assumed in cm^-1
-n      = data[0:maxw,1]
-k      = data[0:maxw,2]
-
-rp = n**2 + k**2
-cp = 2*n*k
-  
-convf = (2*3.14159)/33.35641 #ps -> cm with a 2 pi
-
-dataX = omegas 
-dataY = cp 
-
-#----------------------------------------------------------------------------------
-#---------------------- Define fit function & parameters -------------------------
-#----------------------------------------------------------------------------------
-fD1        = Parameter(71  ,(70,72), "fD1")
-tauD1      = Parameter(8.2   ,(8,8.4) ,"tauD1") #in ps 
-
-fD2        = Parameter(1  ,(.01,5), "fD2")
-tauD2      = Parameter(1 ,(.01,2) ,"tauD2") #in ps 
-
-f1        = Parameter(1.7  ,(1,5), "f1")
-wT1       = Parameter(200 ,(100,300) , "wT1")  
-gamma1    = Parameter(20   ,(0,400) , "gamma")  
+from scipy import optimize 
 
 
-f2        = Parameter(.5  ,(.01,2), "f2")
-wT2       = Parameter(400  ,(300,500) , "wT2")  
-gamma2    = Parameter(100   ,(1,400) , "gamma2")  
+class Debye:
+	"""Debye lineshape object.
+	
+	Note: the tau parameter is assumed to have units of ps and frequencies are assumed to be in cm^-1
+	"""
 
+	def __init__(self,params=[1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="unnamed"):
+		self.p = params
+		self.bounds = bounds
+		self.name = name
+		self.pnames = ["f", "tau"]
+		self.type = "Debye"
+		 
+	def __call__(self, w):
+		convf = (2*3.14159)/33.35641 #ps -> cm with a 2 pi
+		return self.p[0]*w*convf*self.p[1]/(1 + w**2*(convf*self.p[1])**2) 
+       
+class DHO:
+	"""Damped harmonic oscillator object"""
+	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="unnamed"):
+		self.p = params
+		self.bounds = bounds
+		self.name = name
+		self.pnames = ["f", "wT","gamma"]
+		self.type = "Damped Harmonic Oscillator"
 
-f4       = Parameter(.3  ,(.01,2), "f4")
-wT4       = Parameter(500  ,(400,800) , "wT4")  
-gamma4    = Parameter(10   ,(1,1000) , "gamma4")  
+		 
+	def __call__(self, w):
+		return self.p[0]*self.p[1]**2*self.p[2]*w/( (self.p[1]**2 - w**2)**2 + w**2*self.p[2]**2 ) 
+	
+class BRO:
+	"""Briet-Rabbi oscillator"""
+	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="unnamed"):
+		self.p = params
+		self.bounds = bounds
+		self.name = name
+		self.pnames = ["f", "wT","gamma"]
+		self.type = "Breit-Rabbi"
+		 
+	def __call__(self, w):
+		return .5*self.p[0]*self.p[1]**2*self.p[2]*w*( 1/((self.p[1]**2 - w**2)**2 + w**2*self.p[2]**2)  + 1.00/((self.p[1]**2 + w**2)**2 + self.p[2]**2) ) 
+	
+class constant:
+	"""this "lineshape" object is merely a constant term"""
+	def __init__(self,params=[1],bounds=[(0,inf)],name="Eps Infinity"):
+		self.p = params
+		self.bounds = bounds
+		self.name = name
+		self.pnames = ["Eps Infinity"]
+		self.type = "Constant"
+	
+	def __call__(self,w):
+		return 0*w + self.p[0]
 
+class spectralmodel: 
+	"""A spectralmodel object is simply a list of lineshape objects"""
+	def __init__(self,lineshapes=[]):
+		self.lineshapes = lineshapes
+		self.numlineshapes = 0
+		self.RMS_error = None 
+		
+	def add(self,lineshape):
+		"""add a new lineshape object to the spectral model's list of lineshapes"""
+		self.lineshapes = self.lineshapes + [lineshape]
+		self.numlineshapes += 1
+		
+	def setparams(self,params):
+		"""set parameters in the model from a list of parameters for all lineshapes"""
+		i = 0
+		for l in self.lineshapes:
+			for j in range(len(l.p)):
+				l.p[j] = params[i]
+				i += 1
+	
+	def getparams(self):
+		"""get parameters and bounds for all the lineshapes in a model and return both as lists"""
+		params = []
+		bounds = []
+		for lineshape in self.lineshapes:
+			bounds = bounds + lineshape.bounds
+			params = params + lineshape.p
+		return params, bounds
+				
+	def eval(self,w):
+		"""evaluate spectral_model model at frequencies in array w
+			
+		args: 
+			w: an 1xN array with frequencies
+		returns: 
+			a 1xN array with the output of the model
+		"""
+		out = zeros(len(w))	
+		for lineshape in self.lineshapes:
+			out = out + lineshape(w)
+		return out
+	
+	def print_model(self):
+		"""Write out info about all of the parameters in the model """
+		print "RMS error = ", self.RMS_error
+		for lineshape in self.lineshapes:
+			print lineshape.name, lineshape.p
+					
+	def fit_model(self, dataX, dataY):
+		dataX = dataX
+		dataY = dataY
+		def diffsq(params):
+			"""Wrapper function for differential_evolution()
+	
 
-f3        = Parameter(1.4  ,(.01,5), "f3")
-wT3       = Parameter(3500  ,(3000,4000) , "wT3")  
-gamma3    = Parameter(100   ,(1,1000) , "gamma3")  
+			Args: 
+				params: a list of parameters for the model
+			Returns: 
+				The sum of squared error (squared residuals) 
+			"""
+			self.setparams(params)
+			diff = dataY - self.eval(dataX)
+			return dot(diff,diff)
 
+		params, b = self.getparams()
 
-
-epsinfty   = Parameter(1.76,(0, 3),"epsinfty")
-
-paramlist = [fD1, tauD1, fD2, tauD2,f1, wT1, gamma1, f2, wT2, gamma2, f3, wT3, gamma3, f4, wT4, gamma4, epsinfty]
-
-#Debye function
-def Debye(fD,tauD,w):
-  return fD()*w*convf*tauD()/(1 + w**2*(convf*tauD())**2) 
-
-#Damped harmonic oscillator
-def DHO(f,wT,gamma,w):
-  return f()*wT()**2*gamma()*w/( (wT()**2 - w**2)**2 + w**2*gamma()**2 ) 
-
-#Breit-Rabbi lineshape
-
-def DielectricFun(w):
-  return Debye(fD1,tauD1,w) + Debye(fD2,tauD2,w) +  DHO(f1,wT1,gamma1,w) + DHO(f2,wT2,gamma2,w) + DHO(f3,wT3,gamma3,w) + DHO(f4,wT4,gamma4,w)  + epsinfty()
-
-#---------------------- Execute fitting ------------------------------------------
-fit(DielectricFun, paramlist, dataX, dataY)
-
-
-#---------------------- Make pretty graph ----------------------------------------
-plotmin = .1
-plotmax = 4000
-wfit = linspace(10*plotmin, plotmax, 10000)
-loglog(dataX, dataY, "ro", wfit , DielectricFun(wfit), "r-", wfit, Debye(fD1,tauD1,wfit), "g--",wfit,Debye(fD2,tauD2,wfit), "g--",wfit,DHO(f1,wT1,gamma1,wfit), "g--",wfit,DHO(f2,wT2,gamma2,wfit), "g--",wfit, DHO(f3,wT3,gamma3,wfit), "g--",DHO(f4,wT4,gamma4,wfit), "g--") # Plot of the data and the fit
-
-xlim([plotmin,plotmax])
-ylim([.001,dataY.max()+2])
-
-
-#---------------------- Write out info  ------------------------------------------
-for param in paramlist:
-  print "%s = %6.3f" %(param.name, param())
-
-show()
+		#optimize.fmin_tnc(diffsq, params, fprime=None,approx_grad=True,args=params,bounds=b,epsilon=1e-08,)
+		optimize.differential_evolution(diffsq,b) #perform optimization 
+		
+		self.RMS_error = sqrt(diffsq(params)/len(dataX)) #Store RMS error
 
