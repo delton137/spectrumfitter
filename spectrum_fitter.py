@@ -53,7 +53,7 @@ class BRO:
 		self.type = "BRO"
 		 
 	def __call__(self, w):
-		return self.p[0]*2*self.p[2]*w*( 1/((self.p[1] - w)**2 + self.p[2]**2)  + 1.00/((self.p[1] + w)**2 +  self.p[2]**2) ) 
+		return .5*self.p[0]*self.p[2]*w*( 1/((self.p[1] - w)**2 + self.p[2]**2)  + 1.00/((self.p[1] + w)**2 +  self.p[2]**2) ) 
 	
 	def get_freq(self):
 		return self.p[1]
@@ -94,13 +94,18 @@ class spectralmodel:
 				i += 1
 	
 	def getparams(self):
-		"""get parameters and bounds for all the lineshapes in a model and return both as lists"""
+		"""get parameters for all the lineshapes in a model and return as list"""
 		params = []
+		for lineshape in self.lineshapes:
+			params = params + lineshape.p
+		return params
+	
+	def getbounds(self):
+		"""get bounds for all the lineshapes in a model and return as list"""
 		bounds = []
 		for lineshape in self.lineshapes:
 			bounds = bounds + lineshape.bounds
-			params = params + lineshape.p
-		return params, bounds
+		return bounds
 				
 	def eval(self,w):
 		"""evaluate spectral_model model at frequencies in array w
@@ -142,10 +147,37 @@ class spectralmodel:
 			diff = dataY - self.eval(dataX)
 			return dot(diff,diff)
 
-		params, b = self.getparams()
-
+		params = self.getparams()
+		bounds = self.getbounds()
 		#optimize.fmin_tnc(diffsq, params, fprime=None,approx_grad=True,args=params,bounds=b,epsilon=1e-08,)
-		optimize.differential_evolution(diffsq,b) #perform optimization 
+		optimize.differential_evolution(diffsq,bounds) #perform optimization 
+
+		params = self.getparams() #get updated params
+		self.RMS_error = sqrt(diffsq(params)/len(dataX)) #Store RMS error  
 		
-		#self.RMS_error = sqrt(diffsq(params)/len(dataX)) #Store RMS error #problematic line!!!!!!!!!!!
+		
+def plot_model(model,dataX,dataY,handle,plotmin,plotmax):
+    """displays a pretty plot of the model and data using matplotlib
+    
+    args: 
+        model: a spectral_model object
+        dataX: a numpy array giving the experimental x-data
+        dataY: a numpy array giving the experimental y-data
+        handle: an integer giving the plot window number 
+        plotmin: scalar, minimum frequency to plot 
+        plotmax: scalar, maximum frequency to plot
+    """
+    figure(handle)
+
+    plotomegas = linspace(10*plotmin, plotmax, 10000)
+
+    plot(dataX, dataY, "ro", plotomegas, model.eval(plotomegas),'g')
+
+    #plot all of the components
+    for lineshape in model.lineshapes: 
+        plot(plotomegas, lineshape(plotomegas),'g--')
+    #ax.annotate('local max', xy=(3, 1),  xycoords='data')
+
+    #xlim([plotmin,plotmax])
+    #ylim([.001,max(dataY)])
 
