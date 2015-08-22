@@ -39,9 +39,10 @@ Tdata = cp
 ##----------------------------------------------------------------------------------
 ##transverse model
 modelT = spectralmodel()
-#modelT.add(Debye([71,  .5]   ,[(68,73)   ,(.3,.7)  ],"Debye"))
+modelT.add(Debye([71,  .5]   ,[(68,73)   ,(.3,.7)  ],"Debye"))
 #modelT.add(StretchedExp([71, 8, 1]   ,[(0,20000),(5,15), (0,1) ],"StretchedExp"))
-modelT.add(PowerLawDebye([71, .5, 1, 1],[(0,100),(.3,.7), (0,100), (0,2)],"Power law Debye"))
+#modelT.add(PowerLawDebye([71, .5, 1, 1],[(0,100),(.3,.7), (0,100), (0,2)],"Power law Debye"))
+modelT.add(BrendelDHO([4, 1, 1, .5],[(0,80),(.1,100),(.01,100),(.5,.5)],"Brendel"))
 #modelT.add(Debye([2,   1]   ,[(.01,4)   ,(.5,15)   ],"2nd Debye"))
 #modelT.add(Debye([2,   30]   ,[(.01,4)   ,(1,100)   ],"3rd Debye"))
 #modelT.add(DHO([2,60 ,200]   ,[(0,5)   ,(10  ,100)  ,(1 ,400) ],"H-bond bend"))
