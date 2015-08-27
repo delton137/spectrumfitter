@@ -19,30 +19,37 @@ data = loadtxt(fname='Siegelstein.RI')
 #cspeed = 3*10**10
 #data[:,0] = data[:,0]/cspeed #conv data to cm^-1
 
-max_freq_to_analyze = 100
-maxw   = len(data[data[:,0] < max_freq_to_analyze,0])
-omegas = data[0:maxw,0]
+max_freq  = 1200
+maxw      = len(data[data[:,0] < max_freq,0])
+rawomegas = data[0:maxw,0]
+min_freq  = min(rawomegas)
+mid_freq  = 26
+omegas    = concatenate((logspace(log10(min_freq),log10(mid_freq),50),linspace(mid_freq,max_freq,50)))
 
-n      = data[0:maxw,1]
-k      = data[0:maxw,2]
-rp = n**2 + k**2
-cp = 2*n*k
+n     = data[0:maxw,1]
+k     = data[0:maxw,2]
+rawrp = n**2 + k**2
+rawcp = 2*n*k
 
-#rp      = data[0:maxw,1]
-#cp      = -data[0:maxw,2]
-
-Ldata = cp/(rp**2 + cp**2)
-Tdata = cp
+rp = interp(omegas,rawomegas,rawrp)
+cp = interp(omegas,rawomegas,rawcp)
 
 ##----------------------------------------------------------------------------------
 ##---------------------- Define fit function & parameters -------------------------
 ##----------------------------------------------------------------------------------
 ##transverse model
 modelT = spectralmodel()
-modelT.add(Debye([71,  .5]   ,[(68,73)   ,(.3,.7)  ],"Debye"))
+#modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
+#modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
+#modelT.add(Debye([2,   6.44]   ,[(.01,10)   ,(1,15)   ],"2nd Debye"))
 #modelT.add(StretchedExp([71, 8, 1]   ,[(0,20000),(5,15), (0,1) ],"StretchedExp"))
-#modelT.add(PowerLawDebye([71, .5, 1, 1],[(0,100),(.3,.7), (0,100), (0,2)],"Power law Debye"))
-modelT.add(BrendelDHO([4, 1, 1, .5],[(0,80),(.1,100),(.01,100),(.5,.5)],"Brendel"))
+#modelT.add(StretchedExp([200, 6.44, .91],[(0,200000),(1,15), (0,1) ],"2nd StretchedExp"))
+modelT.add(PowerLawDebye([71, .5, 1, 1],[(0,100),(.3,.7), (0,100), (0,2)],"PowLawDebye"))
+#modelT.add(BrendelDHO([1, 50, 10, 2],[(0,100  ),(1,75),(1,300),(.1,100)],"Brendel"))
+modelT.add(BrendelDHO([1, 165, 10,50],[(0,100  ),(75,200),(1,300),(1,100)],"Brendel"))
+modelT.add(BrendelDHO([.3,460,100,50],[(.01,100),(400,520),(1,1000),(1,300)],"Brendel L2"))
+modelT.add(BrendelDHO([.3,650,100,50],[(.01,100),(520,690),(1,1000),(1,300)],"Brendel L2"))
+#modelT.add(BrendelDHO([.3,680,244,50],[(.01,100),(650,720),(1,1000),(1,300)],"Brendel L3"))
 #modelT.add(Debye([2,   1]   ,[(.01,4)   ,(.5,15)   ],"2nd Debye"))
 #modelT.add(Debye([2,   30]   ,[(.01,4)   ,(1,100)   ],"3rd Debye"))
 #modelT.add(DHO([2,60 ,200]   ,[(0,5)   ,(10  ,100)  ,(1 ,400) ],"H-bond bend"))
@@ -56,50 +63,34 @@ modelT.add(BrendelDHO([4, 1, 1, .5],[(0,80),(.1,100),(.01,100),(.5,.5)],"Brendel
 modelT.add(constant([2]       ,[(1,11)],"eps inf"))
 
 
-print "Fitting transverse model..."
+#print "Fitting transverse model..."
 modelT.fit_model(omegas,rp,cp)
  
 #Optional pickling of models (save models)
 #pickle.dump(modelL, open('modelL.pkl', 'wb'))
-#pickle.dump(modelT, open('modelT.pkl', 'wb'))
+pickle.dump(modelT, open('modelT.pkl', 'wb'))
 
 
 #modelL = pickle.load(open('modelL.pkl', 'rb'))
 #modelT = pickle.load(open('modelT.pkl', 'rb'))
+#modelT = pickle.load(open('modelT1Debye3Brendel.pkl', 'rb'))
+#modelT = pickle.load(open('modelT2Debye3Brendel.pkl', 'rb'))
+#modelT = pickle.load(open('modelT1Debye4Brendel.pkl', 'rb'))
 
-#plot_model(modelL,omegas,Ldata,3,.001,max_freq_to_analyze,scale='log') 
-plot_model(modelT,omegas,rp,cp,4,.001,max_freq_to_analyze,scale='log') 
 
 
-#Ldata = cp/(rp**2 + cp**2)
+plot_model(modelT,omegas,rp,cp,1,xmin=min_freq,xmax=max_freq,xscale='log',yscale='log')
+plot_model(modelT,omegas,rp,cp,2,xmin=2,xmax=max_freq,ymin=-.1,ymax=6,xscale='linear',yscale='linear') 
+plot_model(modelT,omegas,rp,cp,3,xmin=min_freq,xmax=max_freq,xscale='log',yscale='log',longitudinal=True)
 
-##----------------------------------------------------------------------------------
-##----- Printout all frequencies in system and left side of gLST equation  --------
-##----------------------------------------------------------------------------------
-sumT = 0 
-print "      name      |   f    |       freq       |      tau (ps) "
-
-for i in range(modelT.numlineshapes):
-	if modelT.lineshapes[i].type == "Debye":
-		print "trans %11s %6.2f  %6.2f (%5.2f ps)" % (modelT.lineshapes[i].name, modelT.lineshapes[i].p[0], modelT.lineshapes[i].p[1], 33.34/(2*3.141*modelT.lineshapes[i].p[1]) )
-
-	elif (modelT.lineshapes[i].type == "DHO") or (modelT.lineshapes[i].type == "BRO") or (modelT.lineshapes[i].type == "StretchedExp"): 
-		print "trans %11s %6.2f  %6.2f + %6.2f i  %6.3f " % (modelT.lineshapes[i].name, modelT.lineshapes[i].p[0], modelT.lineshapes[i].p[1], modelT.lineshapes[i].p[2],  33.34/(2*3.141*modelT.lineshapes[i].p[2]))	
-		
-	elif modelT.lineshapes[i].type == "Constant":
-		print "trans %11s %6.2f" % (modelT.lineshapes[i].name, modelT.lineshapes[i].p[0])
-	
-	else:
-		print modelT.lineshapes[i].p
-
-	sumT = sumT + modelT.lineshapes[i].p[0]
-print ""
+modelT.print_model()
 set_printoptions(precision=2)
 print ""
-print "Sum of trans. oscillator strengths = %6.2f" % sumT
-print ""
-print "trans RMS error = %6.3f" % modelT.RMS_error
+print "Eps(0) = ", rp[0]
+
 
 show(block=True)
+
+
 
 
