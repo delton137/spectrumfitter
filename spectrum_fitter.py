@@ -81,7 +81,7 @@ class BrendelDHO:
 		return sqrt( self.p[1]**2 + self.p[2]**2 )
 	
 	def print_params(self):
-		print u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  (%5.3f ps) \u03C3 = %6.2 cm^-1" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]), self.p[3])	
+		print u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  (%5.3f ps) \u03C3 = %6.2f cm^-1" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]), self.p[3])	
 	
 class StretchedExp:
 	"""Stretched Exponential lineshape """
@@ -185,9 +185,9 @@ class ColeCole:
 	def print_params(self):
 		print u"%11s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B1 %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]),self.p[2] )
 
-class BRO:
-	"""Briet-Rabbi oscillator (also called van Vleck-Weisskopf lineshape)"""
-	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="unnamed"):
+class VanVleck:
+	"""Van Vleck and Weisskopf lineshape Rev. Mod. Phys., 17:227 236, Apr 1945."""
+	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="BRO"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
@@ -208,6 +208,32 @@ class BRO:
 
 	def print_params(self):
 		print u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]))	
+
+
+class Gaussian:
+	"""Gaussian peak in the imaginary part, ie. inertial absorption or homogenous broadening"""
+	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="Gaussian"):
+		self.p = params
+		self.bounds = bounds
+		self.name = name
+		self.pnames = ["f", "wT","gamma"]
+		self.type = "BRO"
+		
+	def __call__(self, w):
+		# sp.dawsn
+		rp = .5*self.p[0]*(self.p[1]**2 + self.p[2]**2)( 1/((self.p[1] - w)**2 + self.p[2]**2)  + 1.00/((self.p[1] + w)**2 +  self.p[2]**2) ) 		 
+		cp = .5*self.p[0]*self.p[2]*w*( 1/((self.p[1] - w)**2 + self.p[2]**2)  + 1.00/((self.p[1] + w)**2 +  self.p[2]**2) ) 
+		return (rp, cp)
+
+	def get_freq(self):
+		return self.p[1]
+	
+	def get_abs_freq(self):
+		return sqrt( self.p[1]**2 + self.p[2]**2 ) 
+
+	def print_params(self):
+		print u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]))
+
 
 	
 class constant:

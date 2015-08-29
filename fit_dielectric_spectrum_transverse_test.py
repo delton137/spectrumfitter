@@ -23,8 +23,8 @@ max_freq  = 1200
 maxw      = len(data[data[:,0] < max_freq,0])
 rawomegas = data[0:maxw,0]
 min_freq  = min(rawomegas)
-mid_freq  = 26
-omegas    = concatenate((logspace(log10(min_freq),log10(mid_freq),50),linspace(mid_freq,max_freq,50)))
+mid_freq  = 18
+omegas    = concatenate((logspace(log10(min_freq),log10(mid_freq),30),linspace(mid_freq,max_freq,80)))
 
 n     = data[0:maxw,1]
 k     = data[0:maxw,2]
@@ -38,37 +38,37 @@ cp = interp(omegas,rawomegas,rawcp)
 ##---------------------- Define fit function & parameters -------------------------
 ##----------------------------------------------------------------------------------
 ##transverse model
-modelT = spectralmodel()
+#modelT = spectralmodel()
 #modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
 #modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
 #modelT.add(Debye([2,   6.44]   ,[(.01,10)   ,(1,15)   ],"2nd Debye"))
 #modelT.add(StretchedExp([71, 8, 1]   ,[(0,20000),(5,15), (0,1) ],"StretchedExp"))
 #modelT.add(StretchedExp([200, 6.44, .91],[(0,200000),(1,15), (0,1) ],"2nd StretchedExp"))
-modelT.add(PowerLawDebye([71, .5, 1, 1],[(0,100),(.3,.7), (0,100), (0,2)],"PowLawDebye"))
+#modelT.add(PowerLawDebye([71, .5, 1, 1.2],[(0,100),(.3,.7), (0,100), (1,2)],"PowLawDebye"))
 #modelT.add(BrendelDHO([1, 50, 10, 2],[(0,100  ),(1,75),(1,300),(.1,100)],"Brendel"))
-modelT.add(BrendelDHO([1, 165, 10,50],[(0,100  ),(75,200),(1,300),(1,100)],"Brendel"))
-modelT.add(BrendelDHO([.3,460,100,50],[(.01,100),(400,520),(1,1000),(1,300)],"Brendel L2"))
-modelT.add(BrendelDHO([.3,650,100,50],[(.01,100),(520,690),(1,1000),(1,300)],"Brendel L2"))
+#modelT.add(BrendelDHO([1, 165, 10,50],[(0,100  ),(75,200),(1,300),(1,100)],"Brendel"))
+#modelT.add(BrendelDHO([.3,460,100,50],[(.01,100),(400,520),(1,1000),(1,300)],"Brendel L2"))
+#modelT.add(BrendelDHO([.3,650,100,50],[(.01,100),(520,690),(1,1000),(1,300)],"Brendel L2"))
 #modelT.add(BrendelDHO([.3,680,244,50],[(.01,100),(650,720),(1,1000),(1,300)],"Brendel L3"))
 #modelT.add(Debye([2,   1]   ,[(.01,4)   ,(.5,15)   ],"2nd Debye"))
 #modelT.add(Debye([2,   30]   ,[(.01,4)   ,(1,100)   ],"3rd Debye"))
 #modelT.add(DHO([2,60 ,200]   ,[(0,5)   ,(10  ,100)  ,(1 ,400) ],"H-bond bend"))
 #modelT.add(DHO([2,150,150]   ,[(.1,4)   ,(150 ,250)  ,(10 ,900) ],"H-bond str."))
-#modelT.add(DHO([.5,500,300]  ,[(.01,2),(380,700)  ,(.1,400) ],"L1"))
-#modelT.add(DHO([.3,600,100]  ,[(.01,2),(500,650)  ,(1,1000)],"L2"))
+#modelT.add(DHO([.5,500,300]  ,[(.01,2),(380,550)  ,(.1,400) ],"L1"))
+#modelT.add(DHO([.3,600,100]  ,[(.01,2),(550,800)  ,(1,1000)],"L2"))
 #modelT.add(DHO([.3,680,244]  ,[(.01,2),(650,720)  ,(1,1000)],"L3"))
 #modelT.add(DHO([1,1600,100]  ,[(.0001,.1),(1500,1700),(.1,500) ],"v2"))
 #modelT.add(DHO([.21,2120,100],[(.0001,.01) ,(2000,2200) ,(10,600) ],"L+v2"))
 #modelT.add(DHO([1.4,3500,100],[(.01,2),(3000,4000),(.1,500) ],"v1+v3"))
-modelT.add(constant([2]       ,[(1,11)],"eps inf"))
+#modelT.add(constant([2]       ,[(1,11)],"eps inf"))
 
 
 #print "Fitting transverse model..."
-modelT.fit_model(omegas,rp,cp)
+#modelT.fit_model(omegas,rp,cp)
  
 #Optional pickling of models (save models)
 #pickle.dump(modelL, open('modelL.pkl', 'wb'))
-pickle.dump(modelT, open('modelT.pkl', 'wb'))
+#pickle.dump(modelT, open('modelT.pkl', 'wb'))
 
 
 #modelL = pickle.load(open('modelL.pkl', 'rb'))
@@ -76,6 +76,7 @@ pickle.dump(modelT, open('modelT.pkl', 'wb'))
 #modelT = pickle.load(open('modelT1Debye3Brendel.pkl', 'rb'))
 #modelT = pickle.load(open('modelT2Debye3Brendel.pkl', 'rb'))
 #modelT = pickle.load(open('modelT1Debye4Brendel.pkl', 'rb'))
+#modelT = pickle.load(open('modelT1PowLawDebye3DHO.pkl', 'rb'))
 
 
 
