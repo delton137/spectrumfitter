@@ -1,3 +1,10 @@
+'''Example of how to use spectrum_fitter.py, to fit the dielectric spectrum of water.'''
+__author__  = "Daniel C. Elton"
+__maintainer__ = "Daniel C. Elton"
+__copyright__ = "Copyright 2015, Daniel C. Elton"
+__license__ = "MIT"
+__status__ = "Development"
+
 from pylab import *
 from scipy import optimize 
 from numpy import *
