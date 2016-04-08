@@ -33,7 +33,7 @@ chikw = zeros([num_points, Nk])
  
 num_avg_over = floor(ntimesteps/num_points)
 nextpow2 = int(2**ceil(log2(ntimesteps)))
-f = array(range(0,ntimesteps,1))/(timestep*nextpow2) #Frequency range
+f = array(list(range(0,ntimesteps,1)))/(timestep*nextpow2) #Frequency range
 
 
 model = spectralmodel()
@@ -54,13 +54,13 @@ for k in range(Nk):
         y = ifft(tderiv,nextpow2)  
             
         #reduce number of points in data by averaging over blocks
-        for i in xrange(1,num_points-1):
+        for i in range(1,num_points-1):
 		temp[i-1]  = mean( y[(i-1)*num_avg_over : i*num_avg_over] )
 
         chikw[:,k] = -chik0[k]*imag(temp)                
-	print k
+	print(k)
 
-for i in xrange(1,num_points-1):
+for i in range(1,num_points-1):
 	freqs[i-1] = mean( f[(i-1)*num_avg_over : i*num_avg_over] )
 	
 freqs = 33.44*freqs #Convert freqs to inverse centimeters
@@ -72,7 +72,7 @@ w_vs_k = zeros([model.numlineshapes, 6])
 
 for k in range(5):
 	model.fit_model(freqs[0:mwfit],chikw[0:mwfit,k])
-	print "fitting # ", k	
+	print("fitting # ", k)	
 	model.plot_model(model,dataX,dataY,handle=k,plotmin,plotmax,scale='lin',show=False,Block=True)
 	w_vs_k[:,k] = model.getfreqs()
 	

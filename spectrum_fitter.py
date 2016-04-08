@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2015, Daniel C. Elton"
 __license__ = "MIT"
 __status__ = "Development"
 
-from pylab import *
+from numpy import *
 from scipy import optimize 
 from scipy import special as sp
 
@@ -14,7 +14,7 @@ class Debye:
 	"""Debye lineshape object.
 	Note: the wD parameter is assumed to be in units of cm^-1
 	"""
-	def __init__(self,params=[1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="Debye"):
+	def __init__(self,params=[1,1],bounds=[(-float('inf'),+float('inf')),(-float('inf'),+float('inf'))],name="Debye"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
@@ -33,11 +33,11 @@ class Debye:
 		return self.p[1]
 	
 	def print_params(self):
-		print u"%11s f=%4.2f \u03C9 %6.2f 1/cm (%5.2f ps)" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]) )
+		print(u"%11s f=%4.2f \u03C9 %6.2f 1/cm (%5.2f ps)" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]) ) )
        
 class DHO:
 	"""Damped harmonic oscillator object"""
-	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="DHO"):
+	def __init__(self,params=[1,1,1],bounds=[(-float('inf'),+float('inf')),(-float('inf'),+float('inf'))],name="DHO"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
@@ -57,12 +57,12 @@ class DHO:
 		return sqrt( self.p[1]**2 + self.p[2]**2 ) 
 	
 	def print_params(self):
-		print u"%11s f= %4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]))	
+		print(u"%11s f= %4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2])))
 
 	
 class BrendelDHO:
 	""""Brendel model for amorphous materials - Gaussian distribution of DHOs. Ref: J. Appl. Phys. 71, 1 (1992)"""
-	def __init__(self,params=[1,1,1,1],bounds=[(0,+inf),(0,+inf),(0,+inf),(0,+inf)],name="BrendelDHO"):
+	def __init__(self,params=[1,1,1,1],bounds=[(0,+float('inf')),(0,+float('inf')),(0,+float('inf')),(0,+float('inf'))],name="BrendelDHO"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
@@ -89,7 +89,33 @@ class BrendelDHO:
 		return sqrt( self.p[1]**2 + self.p[2]**2 )
 	
 	def print_params(self):
-		print u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  (%5.3f ps) \u03C3 = %6.2f cm^-1" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]), self.p[3])	
+		print( u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  (%5.3f ps) \u03C3 = %6.2f cm^-1" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]), self.p[3]))
+		
+class distrDebye:
+    
+	def __init__(self,params=[1,1],bounds=[(0,+float('inf')),(0,+float('inf'))],name="BrendelDHO"):
+		self.p = params
+		self.bounds = bounds
+		self.name = name
+		self.pnames = ["wp**2/w0**2", "wT", "gamma","sigma"]
+		self.type = "BrendelDHO"
+		self.f = 0
+		self.num_tau_pts=10000
+		#self.min_tau=
+		#self.max_tau=
+		
+		tau_values = logspace(min_tau, max_tau, num_tau_pts)
+    
+	#def __call__(self, w):
+	
+		#for m in xrange(1,num_tau_pts+1):
+			#gtau(m)*tau
+
+        #def TikhonovRegularization(self):
+		#der1 = gradient(gdist)
+		#der2 = gradient(der1)
+		#return linalg.norm(der2)**2
+        
 	
 class StretchedExp:
 	"""Stretched Exponential lineshape """
@@ -128,7 +154,7 @@ class StretchedExp:
 		return sqrt( self.p[1]**2 + self.p[2]**2 ) 
 	
 	def print_params(self):
-		print u"%11s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B2 = %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]), self.p[2] )
+		print( u"%11s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B2 = %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]), self.p[2] ))
 	
 		
 class PowerLawDebye:
@@ -137,7 +163,7 @@ class PowerLawDebye:
 	
 	Note: the wD parameter is assumed to be in units of cm^-1
 	"""
-	def __init__(self,params=[1,1],bounds=[(0,+inf),(0,+inf),(0,+inf),(1,10)],name="unnamed"):
+	def __init__(self,params=[1,1],bounds=[(0,+float('inf')),(0,+float('inf')),(0,+float('inf')),(1,10)],name="unnamed"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
@@ -165,14 +191,14 @@ class PowerLawDebye:
 		return self.p[1]
 	
 	def print_params(self):
-		print u"%11s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) A = %6.2f q = %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]),self.p[2], self.p[3] )
-	
+		print(u"%11s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) A = %6.2f q = %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]),self.p[2], self.p[3] ))
+		
 class ColeCole:
 	"""Cole-Cole lineshape object.
 	
 	Note: the wD parameter is assumed to be in units of cm^-1
 	"""
-	def __init__(self,params=[1,1,1],bounds=[(0,+inf),(0,+inf),(0,2)],name="unnamed"):
+	def __init__(self,params=[1,1,1],bounds=[(0,+float('inf')),(0,+float('inf')),(0,2)],name="unnamed"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
@@ -191,16 +217,16 @@ class ColeCole:
 		return self.p[1]
 	
 	def print_params(self):
-		print u"%11s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B1 %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]),self.p[2] )
+		print( u"%11s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B1 %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]),self.p[2] ))
 
 class VanVleck:
 	"""Van Vleck and Weisskopf lineshape Rev. Mod. Phys., 17:227 236, Apr 1945."""
-	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="BRO"):
+	def __init__(self,params=[1,1,1],bounds=[(-float('inf'),+float('inf')),(-float('inf'),+float('inf'))],name="VanVleck"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
 		self.pnames = ["f", "wT","gamma"]
-		self.type = "BRO"
+		self.type = "VanVleck"
 		
 	#the real part has not been tested or checked to see if it is mathematically correct!!!
 	def __call__(self, w):
@@ -215,12 +241,12 @@ class VanVleck:
 		return sqrt( self.p[1]**2 + self.p[2]**2 ) 
 
 	def print_params(self):
-		print u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]))	
+		print( u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]))	)
 
 
 class Gaussian:
 	"""Gaussian peak in the imaginary part, ie. inertial absorption or homogenous broadening"""
-	def __init__(self,params=[1,1,1],bounds=[(-inf,+inf),(-inf,+inf)],name="Gaussian"):
+	def __init__(self,params=[1,1,1],bounds=[(-float('inf'),+float('inf')),(-float('inf'),+float('inf'))],name="Gaussian"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
@@ -240,17 +266,17 @@ class Gaussian:
 		return sqrt( self.p[1]**2 + self.p[2]**2 ) 
 
 	def print_params(self):
-		print u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]))
+		print( u"%11s f =%4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2])))
 
 
 	
 class constant:
 	"""this "lineshape" object is merely a constant term"""
-	def __init__(self,params=[1],bounds=[(0,10000)],name="Eps Inf"):
+	def __init__(self,params=[1],bounds=[(0,10000)],name="Eps float('inf')"):
 		self.p = params
 		self.bounds = bounds
 		self.name = name
-		self.pnames = ["Eps inf."]
+		self.pnames = ["Eps float('inf')."]
 		self.type = "Constant"
 	
 	def __call__(self,w):
@@ -259,7 +285,7 @@ class constant:
 		return (rp, cp)
 	
 	def print_params(self):
-		print "%11s f =%4.2f" % (self.name, self.p[0])
+		print("%11s f =%4.2f" % (self.name, self.p[0]))
 
 class spectralmodel: 
 	"""A spectralmodel object is simply a list of lineshape objects"""
@@ -300,7 +326,7 @@ class spectralmodel:
 		freqs = zeros(self.numlineshapes)
 		for i in range(self.numlineshapes):
 			#if lineshape.type != "Constant": 
-			print i
+			print(i)
 			freqs[i] = self.lineshapes[i].p[1]
 		return freqs
 	
@@ -337,27 +363,27 @@ class spectralmodel:
 		return (rp/denom, cp/denom)
 	
 	def print_model(self):
-		"""Write out info about all of the parameters in the model """
+		"""Write out float('inf')o about all of the parameters in the model """
 		for lineshape in self.lineshapes:
 			lineshape.print_params()
 		set_printoptions(precision=2)
-		print ""
-		print "Sum of trans. oscillator strengths = %6.2f" % self.fsum()
-		print ""
-		print "trans RMS error = %6.3f" % self.RMS_error
+		print( "")
+		print( "Sum of oscillator strengths = %6.2f" % self.fsum())
+		print( "")
+		print( "trans RMS error = %6.3f" % self.RMS_error)
 	
 	def fit_model(self, dataX, datarp, datacp):
 	
 		def diffsq(params):
 			self.setparams(params)
 			(rp,cp) = self(dataX)
-			diffrp = (datarp - rp)/datarp
+			#diffrp = (datarp - rp)/datarp
 			diffcp = (datacp - cp)/datacp 
 			
 			#Ldatacp = datacp/(datarp**2 + datacp**2)
 			#Lfitcp =  cp/(rp**2 + cp**2)
 			#diffLcp = (Ldatacp - Lfitcp)/Ldatacp
-			return dot(diffrp,diffrp) + dot(diffcp,diffcp)
+			return dot(diffcp,diffcp)# + dot(diffrp,diffrp)  
 	
 		def costfun(params):
 			"""Wrapper function neede for differential_evolution()
@@ -368,9 +394,9 @@ class spectralmodel:
 				The cost function
 			"""
 			Error = diffsq(params) 
-			penalty = (datarp[0] - self.fsum())/datarp[0] 
+			#penalty = (datarp[0] - self.fsum())/datarp[0] 
 			
-			return Error + 800*penalty**2 
+			return Error# + 800*penalty**2 
 
 		params = self.getparams()
 		bounds = self.getbounds()
@@ -381,9 +407,9 @@ class spectralmodel:
 		#ret = basinhopping(diffsq, params, niter=10,accept_test=mybounds)
 
 		params = self.getparams() #get updated params
-		#print params
+		#print(params)
 		#params = ret.x
-		#print params
+		#print(params)
 		#self.setparams(params)
 
 		self.RMS_error = sqrt(diffsq(params)/(2*len(dataX))) #Store RMS error  
@@ -404,16 +430,15 @@ def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='
         show: logical, option to display plot
         blockoption: logical, option to block further processing after displaying window (Default True, False is experimental) 
         """
-        if (xmin == None):
+	if (xmin == None):
 		xmin = min(dataX)
-        if (xmax == None):
+	if (xmax == None):
 		xmax = max(dataX)
-        if (ymin == None):
+	if (ymin == None):
 		ymin = min(dataYrp)
-        if (ymax == None):
+	if (ymax == None):
 		ymax = max(dataYrp)
-        
-        if (xscale == 'log'):
+	if (xscale == 'log'):
 		plotomegas = logspace(log10(xmin), log10(xmax), 10000)
 	else: 
 		plotomegas = linspace(xmin, xmax, 10000)

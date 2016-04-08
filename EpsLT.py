@@ -84,8 +84,8 @@ for t in range(0,num_temps):
         peak_posL[t] = [750,3438]
 
 
-    print filenames[t] + " T " + str(peak_posT[t])
-    print filenames[t] + " L " + str(peak_posL[t])
+    print(filenames[t] + " T " + str(peak_posT[t]))
+    print(filenames[t] + " L " + str(peak_posL[t]))
 
     miny = 0 
     maxy = 2.8
@@ -135,16 +135,16 @@ plt.show()
 #--------------------------Analyze LO-TO splittings ------------
 #----------------------------------------------------------------
 
-print "Librational LOTO Splittings: " + str(split1)
-print "Bending LOTO Splittings: " + str(split2)
-print "Stretching LOTO Splittings: " + str(split3)
+print("Librational LOTO Splittings: " + str(split1))
+print("Bending LOTO Splittings: " + str(split2))
+print("Stretching LOTO Splittings: " + str(split3))
 
 #
 for t in range(num_temps-2):
     if len(peak_posT[t]) != len(peak_posL[t]): 
-        print "ERROR - missing a peak"
+        print("ERROR - missing a peak")
     else:
         LSTratio = [peak_posL[t][i]**2/peak_posT[t][i]**2 for i in [1,2,3]]
-        print filenames[t] + " " + str(LSTratio)
-        print "generalized LST:" + " " +  str(LSTratio[0]*LSTratio[1]*LSTratio[2])
+        print(filenames[t] + " " + str(LSTratio))
+        print("generalized LST:" + " " +  str(LSTratio[0]*LSTratio[1]*LSTratio[2]))
             

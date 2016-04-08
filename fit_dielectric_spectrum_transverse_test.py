@@ -93,8 +93,8 @@ plot_model(modelT,omegas,rp,cp,3,xmin=min_freq,xmax=max_freq,xscale='log',yscale
 
 modelT.print_model()
 set_printoptions(precision=2)
-print ""
-print "Eps(0) = ", rp[0]
+print("")
+print("Eps(0) = ", rp[0])
 
 
 show(block=True)
