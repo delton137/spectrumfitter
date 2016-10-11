@@ -5,7 +5,6 @@ __copyright__ = "Copyright 2015, Daniel C. Elton"
 __license__ = "MIT"
 __status__ = "Development"
 
-from pylab import *
 from scipy import optimize 
 from numpy import *
 from spectrum_fitter import *
@@ -45,17 +44,17 @@ cp = interp(omegas,rawomegas,rawcp)
 ##---------------------- Define fit function & parameters -------------------------
 ##----------------------------------------------------------------------------------
 ##transverse model
-#modelT = spectralmodel()
-#modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
-#modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
-#modelT.add(Debye([2,   6.44]   ,[(.01,10)   ,(1,15)   ],"2nd Debye"))
+modelT = spectralmodel()
+modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
+modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
+modelT.add(Debye([2,   6.44]   ,[(.01,10)   ,(1,15)   ],"2nd Debye"))
 #modelT.add(StretchedExp([71, 8, 1]   ,[(0,20000),(5,15), (0,1) ],"StretchedExp"))
 #modelT.add(StretchedExp([200, 6.44, .91],[(0,200000),(1,15), (0,1) ],"2nd StretchedExp"))
 #modelT.add(PowerLawDebye([71, .5, 1, 1.2],[(0,100),(.3,.7), (0,100), (1,2)],"PowLawDebye"))
-#modelT.add(BrendelDHO([1, 50, 10, 2],[(0,100  ),(1,75),(1,300),(.1,100)],"Brendel"))
-#modelT.add(BrendelDHO([1, 165, 10,50],[(0,100  ),(75,200),(1,300),(1,100)],"Brendel"))
-#modelT.add(BrendelDHO([.3,460,100,50],[(.01,100),(400,520),(1,1000),(1,300)],"Brendel L2"))
-#modelT.add(BrendelDHO([.3,650,100,50],[(.01,100),(520,690),(1,1000),(1,300)],"Brendel L2"))
+modelT.add(BrendelDHO([1, 50, 10, 2],[(0,100  ),(1,75),(1,300),(.1,100)],"Brendel"))
+modelT.add(BrendelDHO([1, 165, 10,50],[(0,100  ),(75,200),(1,300),(1,100)],"Brendel"))
+modelT.add(BrendelDHO([.3,460,100,50],[(.01,100),(400,520),(1,1000),(1,300)],"Brendel L2"))
+modelT.add(BrendelDHO([.3,650,100,50],[(.01,100),(520,690),(1,1000),(1,300)],"Brendel L2"))
 #modelT.add(BrendelDHO([.3,680,244,50],[(.01,100),(650,720),(1,1000),(1,300)],"Brendel L3"))
 #modelT.add(Debye([2,   1]   ,[(.01,4)   ,(.5,15)   ],"2nd Debye"))
 #modelT.add(Debye([2,   30]   ,[(.01,4)   ,(1,100)   ],"3rd Debye"))
@@ -70,8 +69,8 @@ cp = interp(omegas,rawomegas,rawcp)
 #modelT.add(constant([2]       ,[(1,11)],"eps inf"))
 
 
-#print "Fitting transverse model..."
-#modelT.fit_model(omegas,rp,cp)
+print("Fitting transverse model...")
+modelT.fit_model(omegas,rp,cp)
  
 #Optional pickling of models (save models)
 #pickle.dump(modelL, open('modelL.pkl', 'wb'))
@@ -85,11 +84,8 @@ cp = interp(omegas,rawomegas,rawcp)
 #modelT = pickle.load(open('modelT1Debye4Brendel.pkl', 'rb'))
 #modelT = pickle.load(open('modelT1PowLawDebye3DHO.pkl', 'rb'))
 
+plot_model(modelT,omegas,rp,cp,4,.001,max_freq,xscale='log') 
 
-
-plot_model(modelT,omegas,rp,cp,1,xmin=min_freq,xmax=max_freq,xscale='log',yscale='log')
-plot_model(modelT,omegas,rp,cp,2,xmin=2,xmax=max_freq,ymin=-.1,ymax=6,xscale='linear',yscale='linear') 
-plot_model(modelT,omegas,rp,cp,3,xmin=min_freq,xmax=max_freq,xscale='log',yscale='log',longitudinal=True)
 
 modelT.print_model()
 set_printoptions(precision=2)
@@ -97,7 +93,7 @@ print("")
 print("Eps(0) = ", rp[0])
 
 
-show(block=True)
+plt.show(block=True)
 
 
 

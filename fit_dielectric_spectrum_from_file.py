@@ -1,3 +1,9 @@
+__author__  = "Daniel C. Elton"
+__maintainer__ = "Daniel C. Elton"
+__copyright__ = "Copyright 2015, Daniel C. Elton"
+__license__ = "MIT"
+__status__ = "Development"
+
 from scipy import optimize 
 from numpy import *
 from spectrum_fitter import *
@@ -18,14 +24,24 @@ data = loadtxt(fname='Siegelstein.RI')
 #cspeed = 3*10**10
 #data[:,0] = data[:,0]/cspeed #conv data to cm^-1
 
-max_freq_to_analyze = 1000
-maxw   = len(data[data[:,0] < max_freq_to_analyze,0])
-omegas = data[0:maxw,0]
+#maxw   = len(data[data[:,0] < max_freq_to_analyze,0])
+#omegas = data[0:maxw,0]
+
+max_freq_to_analyze = 1500
+maxw      = len(data[data[:,0] < max_freq_to_analyze,0])
+rawomegas = data[0:maxw,0]
+min_freq  = min(rawomegas)
+mid_freq  = 18
+omegas    = concatenate((logspace(log10(min_freq),log10(mid_freq),50),linspace(mid_freq,max_freq_to_analyze,80)))
 
 n      = data[0:maxw,1]
 k      = data[0:maxw,2]
-rp = n**2 + k**2
-cp = 2*n*k
+
+rawrp = n**2 + k**2
+rawcp = 2*n*k
+
+rp = interp(omegas,rawomegas,rawrp)
+cp = interp(omegas,rawomegas,rawcp)
 
 Ldatarp = rp/(rp**2 + cp**2)
 Ldatacp = cp/(rp**2 + cp**2)
@@ -34,39 +50,53 @@ Ldatacp = cp/(rp**2 + cp**2)
 ##---------------------- Define fit function & parameters -------------------------
 ##----------------------------------------------------------------------------------
 ##longitudinal model
-modelL = spectralmodel()
-#modelL.add(Debye([.2 ,  .4 ]  ,[(.0005,1) , (.1 ,20)]  ,  "low freq Debye"))
+modelL = SpectralModel()
 modelL.add(Debye([.001 , 10 ]   ,[(.001,1)  , (.5 ,50)]   ,"Debye"))
-modelL.add(Debye([5 , 100 ]   ,[(.001,1)  , (.5 ,50)]   ,  "2nd Debye"))
-modelL.add(Debye([.1, 100]   ,[(.0001,1) , (20 ,200)],     "3rd Debye"))
-modelL.add(DHO([2,60 ,60 ]   ,[(0,5)   ,(10  ,100)  ,(1  ,400) ],"H-bond bend"))
-modelL.add(DHO([2,222,200]   ,[(0,5)   ,(200 ,300)  ,(10 ,900) ],"H-bond str."))
-modelL.add(DHO([.5,450,100]  ,[(.01,2) ,(380 ,700)  ,(.1,400) ],"L1"))
-modelL.add(DHO([.3,660,244]  ,[(.01,2) ,(300,700)  ,(1,1000)],"L2"))
+modelL.add(Debye([5 , 1 ]   ,[(.001,1)  , (.4 ,50)]   ,  "2nd Debye"))
+modelL.add(Debye([.1, 10]   ,[(.0001,1) , (.5 ,100)],     "3rd Debye"))
+#modelL.add(DHO([2,60 ,60 ]   ,[(0,5)   ,(10  ,100)  ,(1  ,400) ],"H-bond bend"))
+modelL.add(BrendelDHO([2,222,200,40]   ,[(.001,5)   ,(200 ,300)  ,(10 ,900),(1,90) ],"Brendel H-bond str."))
+modelL.add(BrendelDHO([.5,450,100,50]  ,[(.01,2) ,(380 ,700)  ,(.1,400),(1,150) ],"Brendel L1"))
+modelL.add(BrendelDHO([.3,660,244,50]  ,[(.01,2) ,(300,700)  ,(1,1000),(1,150)],"Brendel L2"))
 #modelL.add(DHO([.3,760,200]  ,[(.01,2) ,(650,800)  ,(1,1000)],"L3"))
-modelL.add(DHO([1,1500,100]  ,[(.0001,.1) ,(1300,1700) ,(10,600) ],"v2"))
-modelL.add(DHO([.21,2120,100],[(.0001,.01) ,(2000,2200) ,(10,600) ],"L+v2"))
-modelL.add(DHO([1.4,3500,100],[(.01,2) ,(3000,4000) ,(.1,500) ],"v1+v3"))
+#modelL.add(DHO([1,1500,100]  ,[(.0001,.1) ,(1300,1700) ,(10,600) ],"v2"))
+#modelL.add(DHO([.21,2120,100],[(.0001,.01) ,(2000,2200) ,(10,600) ],"L+v2"))
+#modelL.add(DHO([1.4,3500,100],[(.01,2) ,(3000,4000) ,(.1,500) ],"v1+v3"))
+modelL.add(constant([.001]       ,[(.001,2)],"eps inf L"))
+
 
 ##transverse model
-modelT = spectralmodel()
-modelT.add(Debye([71,  .5]   ,[(68,73)   ,(.3,.6)  ],"Debye"))
-modelT.add(Debye([2,   10]   ,[(.01,4)   ,(1,15)   ],"2nd Debye"))
-modelT.add(Debye([2,   30]   ,[(.01,4)   ,(1,100)   ],"3rd Debye"))
-modelT.add(DHO([2,60 ,200]   ,[(0,5)   ,(10  ,100)  ,(1 ,400) ],"H-bond bend"))
-modelT.add(DHO([2,150,150]   ,[(.1,4)   ,(150 ,250)  ,(10 ,900) ],"H-bond str."))
-modelT.add(DHO([.5,500,300]  ,[(.01,2),(380,700)  ,(.1,400) ],"L1"))
-modelT.add(DHO([.3,600,100]  ,[(.01,2),(500,650)  ,(1,1000)],"L2"))
+modelT = SpectralModel()
+modelT.add(Debye([69,  .55]   ,[(65,73)   ,(.3,.65)    ],"Debye"))
+modelT.add(Debye([2,   1]    ,[(.001,10)   ,(.1,10)   ],"2nd Debye"))
+modelT.add(Debye([2,   10]   ,[(.001,5)   ,(10,50)   ],"3rd Debye"))
+#modelT.add(DHO([2,60 ,200]   ,[(0,5)   ,(10  ,100)  ,(1 ,400) ],"H-bond bend"))
+#modelT.add(DHO([2,150,150]   ,[(.1,4)   ,(150 ,250)  ,(10 ,900) ],"H-bond str."))
+#modelT.add(DHO([.5,400,300]  ,[(.01,2),(340,500)  ,(.1,400) ],"L1"))
+#modelT.add(DHO([.3,500,100]  ,[(.01,2),(450,700)  ,(1,1000)],"L2"))
+#modelT.add(DHO([.3,650,100]  ,[(.01,2),(550,750)  ,(1,1000)],"L3"))
+modelT.add(BrendelDHO([1, 50, 10, 2],[(0,100  ),(1,75),(1,300),(.1,100)],"Brendel Hbond Bend"))
+modelT.add(BrendelDHO([1, 165, 10,50],[(0,100  ),(75,200),(1,300),(1,100)],"Brendel Hbond Str"))
+modelT.add(BrendelDHO([.3,460,100,50],[(.01,100),(400,520),(1,500),(1,200)],"Brendel L1"))
+modelT.add(BrendelDHO([.3,650,100,50],[(.01,100),(520,750),(1,500),(1,200)],"Brendel L2"))
 #modelT.add(DHO([.3,680,244]  ,[(.01,2),(650,720)  ,(1,1000)],"L3"))
-modelT.add(DHO([1,1600,100]  ,[(.0001,.1),(1500,1700),(.1,500) ],"v2"))
-modelT.add(DHO([.21,2120,100],[(.0001,.01) ,(2000,2200) ,(10,600) ],"L+v2"))
-modelT.add(DHO([1.4,3500,100],[(.01,2),(3000,4000),(.1,500) ],"v1+v3"))
-  
+#modelT.add(DHO([1,1600,100]  ,[(.0001,.1),(1500,1700),(.1,500) ],"v2"))
+#modelT.add(DHO([.21,2120,100],[(.0001,.01) ,(2000,2200) ,(10,600) ],"L+v2"))
+#modelT.add(BrendelDHO([1.4,3500,100,20],[(.01,2),(3000,4000),(.1,500),(1,100) ],"Brendelv1+v3"))
+modelT.add(constant([2]       ,[(1,11)],"eps inf"))
+
+
+##----------------------------------------------------------------------------------
+##---------------------- Fitting the models----------------------------------------
+##----------------------------------------------------------------------------------
+
+# ----------- fitting longitudinal and transverse models seperately ---------------
 print("Fitting longitudinal model...")
 modelL.fit_model(omegas,Ldatarp,Ldatacp)
 
-print("Fitting transverse model...")
-modelT.fit_model(omegas,rp,cp)
+#print("Fitting transverse model...")
+#modelT.fit_model(omegas,rp,cp)
+
  
 #Optional pickling of models (save models)
 #pickle.dump(modelL, open('modelL.pkl', 'wb'))
@@ -84,53 +114,18 @@ modelT.fit_model(omegas,rp,cp)
 #modelL = pickle.load(open('2DebyeHstr2Lib3DHOL.pkl', 'rb'))
 #modelT = pickle.load(open('2DebyeHstr2Lib3DHOT.pkl', 'rb'))
 
-plot_model(modelL,omegas,Ldatacp,1,.001,max_freq_to_analyze) 
-plot_model(modelT,omegas,cp,2,.001,max_freq_to_analyze)
-plot_model(modelL,omegas,Ldatacp,3,.001,max_freq_to_analyze,scale='log') 
-plot_model(modelT,omegas,cp,4,.001,max_freq_to_analyze,scale='log') 
+#-------------------- fit both models together with gLST constraint -------------------
 
+#print("doing gLST contrained fit")
+#fit_model_gLST_constraint(modelL, modelT, omegas, rp, cp)
 
-##----------------------------------------------------------------------------------
-##----- Printout all frequencies in system and left side of gLST equation  --------
-##----------------------------------------------------------------------------------
-ratios = zeros(modelL.numlineshapes)
-sumL = 0
-sumT = 0 
-print("      name      |   f    |       freq       |      tau (ps) ")
+#-------------------- priting out parameters and plotting ------------------------------
+print_gLST_LHS_stuff(modelL, modelT)
 
-if (modelL.numlineshapes == modelT.numlineshapes): 
-	for i in range(modelL.numlineshapes):
-		if modelL.lineshapes[i].type == "Debye":
-			print(("long. %11s %6.2f  %6.2f (%5.2f ps)" % (modelL.lineshapes[i].name, modelL.lineshapes[i].p[0], modelL.lineshapes[i].p[1], 33.34/(2*3.141*modelL.lineshapes[i].p[1])  )))
-		
-		if modelT.lineshapes[i].type == "Debye":
-			print(("trans %11s %6.2f  %6.2f (%5.2f ps)" % (modelT.lineshapes[i].name, modelT.lineshapes[i].p[0], modelT.lineshapes[i].p[1], 33.34/(2*3.141*modelT.lineshapes[i].p[1]) )))
-			ratios[i] = modelL.lineshapes[i].p[1]/modelT.lineshapes[i].p[1]		
-	
-		if (modelL.lineshapes[i].type == "DHO") or (modelL.lineshapes[i].type == "VanVleck"): 
-			print(("long. %11s %6.2f  %6.2f + %6.2f i  %6.3f  " % (modelL.lineshapes[i].name, modelL.lineshapes[i].p[0], modelL.lineshapes[i].p[1], modelL.lineshapes[i].p[2],  33.34/(2*3.141*modelL.lineshapes[i].p[2]))))
-	
-		if (modelT.lineshapes[i].type == "DHO") or (modelT.lineshapes[i].type == "VanVleck"): 
-			print(("trans %11s %6.2f  %6.2f + %6.2f i  %6.3f " % (modelT.lineshapes[i].name, modelT.lineshapes[i].p[0], modelT.lineshapes[i].p[1], modelT.lineshapes[i].p[2],  33.34/(2*3.141*modelT.lineshapes[i].p[2]))))	
-			ratios[i] = (modelL.lineshapes[i].p[1]**2 + modelL.lineshapes[i].p[2]**2)/modelT.lineshapes[i].p[1]**2
+#plot_model(modelL,omegas,Ldatarp,Ldatacp,1,.001,max_freq_to_analyze,title='Longitudinal eps(omega)') 
+plot_model(modelT,omegas,rp,cp,2,.001,max_freq_to_analyze,title='Transverse eps(omega)')
 
-	
-		sumL = sumL + modelL.lineshapes[i].p[0]
-		sumT = sumT + modelT.lineshapes[i].p[0]
-else: 
-	print("ERROR: number of lineshapes in Longitudinal model not equal to number in Transverse model")
-		
-print("")
-set_printoptions(precision=2)
-print(("LST Ratios =", ratios))
-print(("LST LHS = %6.2f" % prod(ratios)))
-print("")
-print(("Sum of tran. oscillator strengths = %6.2f" % sumT)) 
-print(("Sum of long. oscillator strengths = %6.2f" % sumL))
-print("")
-print(("long. RMS error = %6.3f" % modelL.RMS_error))
-print(("trans RMS error = %6.3f" % modelT.RMS_error))
+#plot_model(modelL,omegas,Ldatarp,Ldatacp,3,.001,max_freq_to_analyze,xscale='log',title='Longitudinal eps(omega)') 
+plot_model(modelT,omegas,rp,cp,4,.001,max_freq_to_analyze,xscale='log',title='Transverse eps(omega)') 
 
-show(block=True)
-
-
+plt.show(block=True)
