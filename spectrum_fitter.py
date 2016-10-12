@@ -39,7 +39,7 @@ class Debye(Lineshape):
         return self.p[1]
     
     def print_params(self):
-        print(u"%20s f=%4.2f \u03C9 %6.2f 1/cm (%5.2f ps)" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]) ) )
+        print(u"%20s f =%7.5f \u03C9 = %6.2f 1/cm (%5.2f ps)" % (self.name, self.p[0], self.p[1], self.p[1]/33.333))
        
 class DHO(Lineshape):
     """Damped harmonic oscillator object"""
@@ -61,7 +61,7 @@ class DHO(Lineshape):
         return sqrt( self.p[1]**2 + self.p[2]**2 ) 
     
     def print_params(self):
-        print(u"%20s f= %4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2])))
+        print(u"%20s f =%7.5f \u03C9 = %6.2f + %6.2f i  (%6.3f ps)" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2])))
 
     
 class BrendelDHO(Lineshape):
@@ -91,7 +91,7 @@ class BrendelDHO(Lineshape):
         return sqrt( self.p[1]**2 + self.p[2]**2 )
     
     def print_params(self):
-        print( u"%20s f =%4.2f \u03C9= %6.2f + %6.2f i  (%5.3f ps) \u03C3 = %6.2f cm^-1" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]), self.p[3]))
+        print( u"%20s f =%7.5f \u03C9 = %6.2f + %6.2f i  (%5.3f ps) \u03C3 = %6.2f cm^-1" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/self.p[2], self.p[3]))
         
 class DistributionOfDebye(Lineshape):
     
@@ -151,7 +151,7 @@ class StretchedExp(Lineshape):
         return sqrt( self.p[1]**2 + self.p[2]**2 ) 
     
     def print_params(self):
-        print( u"%20s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B2 = %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]), self.p[2] ))
+        print( u"%20s f =%7.5f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B2 = %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(self.p[1]), self.p[2] ))
     
         
 class PowerLawDebye(Lineshape):
@@ -186,7 +186,7 @@ class PowerLawDebye(Lineshape):
         return self.p[1]
     
     def print_params(self):
-        print(u"%20s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) A = %6.2f q = %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]),self.p[2], self.p[3] ))
+        print(u"%20s f =%7.5f \u03C9 %6.2f 1/cm (%5.2f ps) A = %6.2f q = %6.2f" % (self.name, self.p[0], self.p[1], 33.34/self.p[1], self.p[2], self.p[3] ))
         
 class ColeCole(Lineshape):
     """Cole-Cole lineshape object.
@@ -210,7 +210,7 @@ class ColeCole(Lineshape):
         return self.p[1]
     
     def print_params(self):
-        print( u"%20s f =%4.2f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B1 %6.2f" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]),self.p[2] ))
+        print( u"%20s f =%7.5f \u03C9 %6.2f 1/cm (%5.2f ps) \u03B1 %6.2f" % (self.name, self.p[0], self.p[1], 33.34/self.p[1], self.p[2] ))
 
 class VanVleck(Lineshape):
     """Van Vleck and Weisskopf lineshape Rev. Mod. Phys., 17:227 236, Apr 1945."""
@@ -232,7 +232,7 @@ class VanVleck(Lineshape):
         return sqrt( self.p[1]**2 + self.p[2]**2 ) 
 
     def print_params(self):
-        print( u"%20s f =%4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]))    )
+        print( u"%20s f =%7.5f \u03C9= %6.2f + %6.2f i  %6.3f ps" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2]))    )
 
 
 class Gaussian(Lineshape):
@@ -255,12 +255,12 @@ class Gaussian(Lineshape):
         return sqrt( self.p[1]**2 + self.p[2]**2 ) 
 
     def print_params(self):
-        print( u"%20s f =%4.2f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2])))
+        print( u"%20s f =%7.5f \u03C9= %6.2f + %6.2f i  %6.3f" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2])))
 
     
 class constant(Lineshape):
     """this "lineshape" object is merely a constant term"""
-    def __init__(self,params=[1],bounds=[(0,10000)],name="Eps float('inf')"):
+    def __init__(self,params=[1],bounds=[(0,100)],name="constant"):
         Lineshape.__init__(self, params, bounds, name)
         self.pnames = ["Eps float('inf')."]
         self.type = "Constant"
@@ -271,7 +271,7 @@ class constant(Lineshape):
         return (rp, cp)
     
     def print_params(self):
-        print("%20s f =%4.2f" % (self.name, self.p[0]))
+        print("%20s f =%7.5f" % (self.name, self.p[0]))
 
 class SpectralModel: 
     """A spectralmodel object is simply a list of lineshape objects"""
@@ -354,7 +354,7 @@ class SpectralModel:
             lineshape.print_params()
         set_printoptions(precision=2)
         print( "")
-        print( "Sum of oscillator strengths = %6.2f" % self.fsum())
+        print( "f-sum of oscillator strengths = %6.2f" % self.fsum())
         print( "")
         print( "RMS error = %6.3f" % self.RMS_error)
     
@@ -375,23 +375,28 @@ class SpectralModel:
             return dot(diffcp, diffcp) + dot(diffrp, diffrp) #+ dot(diffLcp,diffLcp)
 
         def costfun(params):
-            """Wrapper function neede for differential_evolution()
+            """Wrapper function neede for the optimization method
 
             Args: 
                 params: a list of parameters for the model
             Returns: 
-                The cost function
+                The cost (real scalar)
             """
             Error = diffsq(params) 
             
-            fsumpenalty = (datarp[0] - self.fsum())/datarp[0] 
+            fsumpenalty = datarp[0] - self.fsum()
             
-            return Error + 100*fsumpenalty**2 
+            return Error + fsumpenalty**2 
 
         params = self.getparams()
         bounds = self.getbounds()
         #optimize.fmin_tnc(diffsq, params, fprime=None,approx_grad=True,args=params,bounds=b,epsilon=1e-08,)
-        optimize.differential_evolution(costfun,bounds)  
+        
+        #resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method='Powell')
+        resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method='TNC')
+        print("number of iterations = ", resultobject.nit)
+        
+        optimize.differential_evolution(costfun,bounds,maxiter=1000)  
         #mybounds = MyBounds(bounds=array(bounds))
                 
         #ret = basinhopping(diffsq, params, niter=10,accept_test=mybounds)
@@ -410,7 +415,7 @@ class SpectralModel:
 def fit_model_gLST_constraint(modelL, modelT, dataX, Tdatarp, Tdatacp):
         ''' fit both the transverse and longitudinal models at the same time with the gLST constraint  '''
 
-        Ldatarp = Tdatarp/(Tdatarp**2 + Tdatacp**2)
+        Ldatarp = 1.0 - Tdatarp/(Tdatarp**2 + Tdatacp**2)
         Ldatacp = Tdatacp/(Tdatarp**2 + Tdatacp**2)
         
         def diffsq(paramsL, paramsT):
@@ -424,7 +429,11 @@ def fit_model_gLST_constraint(modelL, modelT, dataX, Tdatarp, Tdatacp):
             Ldiff = (Ldatarp - Lrp)/Ldatarp + (Ldatacp - Lcp)/Ldatacp 
             Tdiff = (Tdatarp - Trp)/Tdatarp + (Tdatacp - Tcp)/Tdatacp 
 
-            return dot(Tdiff, Tdiff) + dot(Ldiff, Ldiff)
+            err = dot(Tdiff, Tdiff) + dot(Ldiff, Ldiff)
+            
+            #print("err = ", err)
+            
+            return err
 
         def costfun(params):
             """Wrapper function needed for differential_evolution()
@@ -441,13 +450,15 @@ def fit_model_gLST_constraint(modelL, modelT, dataX, Tdatarp, Tdatacp):
             eps0    = Tdatarp[0]
             eps_inf = Tdatarp[-1]
             
-            fsumpenalty = ( ( - modelT.fsum())/Tdatarp[0] )**2
+            fsumpenalty = ( ( eps0 - modelT.fsum())/Tdatarp[0] )**2
             
             gLST_RHS = eps0/eps_inf
-            
+                        
             gLSTpenalty = ( gLST_LHS(modelL, modelT) - gLST_RHS )**2
-
-            return diffsq(paramsL, paramsT) # + 50*fsumpenalty + 50*gLSTpenalty
+            
+            print(diffsq(paramsL, paramsT) , gLSTpenalty , 100*fsumpenalty)
+            
+            return diffsq(paramsL, paramsT) + gLSTpenalty  + 100*fsumpenalty
 
         Lparams = modelL.getparams()
         Tparams = modelT.getparams()
@@ -461,8 +472,13 @@ def fit_model_gLST_constraint(modelL, modelT, dataX, Tdatarp, Tdatacp):
         
         assert len(boundsL) == len(boundsT)
         assert len(params) == len(bounds)
+    
+    
+        resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method = 'Powell')#, method='TNC')
+        print("number of iterations = ", resultobject.nit)
         
-        optimize.differential_evolution(costfun, bounds)  
+        #optimize.fmin_l_bfgs_b(costfun, bounds=bounds)
+        #optimize.differential_evolution(costfun, bounds)  
     
         Lparams = modelL.getparams()
         Tparams = modelT.getparams()
@@ -470,42 +486,64 @@ def fit_model_gLST_constraint(modelL, modelT, dataX, Tdatarp, Tdatacp):
         print("RMS error = ",sqrt(diffsq(Lparams, Tparams)))
 
 #----------------------------------------------------------------------------------------------------
-def gLST_LHS(modelL, modelT, print_ratios=False):
+def print_gLST_ratios(modelL, modelT):
+    '''try to print out the ratios for different modes. Note this may not be very accurate as the ordering of modes in the longitudinal and transverse model
+        may not be the same'''
     
-    ratios = zeros(modelL.numlineshapes)
+    ratios = ones(modelL.numlineshapes)
     
-    assert modelL.numlineshapes == modelT.numlineshapes 
+    if (modelL.numlineshapes == modelT.numlineshapes): 
+    
+        for i in range(modelL.numlineshapes):
+            if modelL.lineshapes[i].type == "Debye":
+                ratios[i] = modelL.lineshapes[i].p[1]/modelT.lineshapes[i].p[1]
+
+            if (modelL.lineshapes[i].type == "DHO") or (modelL.lineshapes[i].type == "VanVleck") or (modelL.lineshapes[i].type == "BrendelDHO"):             
+                ratios[i] = (modelL.lineshapes[i].p[1]**2 + modelL.lineshapes[i].p[2]**2)/modelT.lineshapes[i].p[1]**2
+
+        set_printoptions(precision=2)
+        print("LST Ratios = ", ratios)
+        #print("Prod of rations =", prod(ratios))
+    else:
+        print("Can't compute gLST ratios, number of lineshapes in transverse not equal to number in longitudinal")
+    
+#----------------------------------------------------------------------------------------------------    
+def gLST_LHS(modelL,modelT):
+    '''calculate the left hand side of the GLST equation'''
+
+    numerator   = ones(modelL.numlineshapes)
+    denominator = ones(modelT.numlineshapes)
     
     for i in range(modelL.numlineshapes):
         if modelL.lineshapes[i].type == "Debye":
-            ratios[i] = modelL.lineshapes[i].p[1]/modelT.lineshapes[i].p[1]
+            numerator[i] = modelL.lineshapes[i].p[1]
 
         if (modelL.lineshapes[i].type == "DHO") or (modelL.lineshapes[i].type == "VanVleck") or (modelL.lineshapes[i].type == "BrendelDHO"):             
-            ratios[i] = (modelL.lineshapes[i].p[1]**2 + modelL.lineshapes[i].p[2]**2)/modelT.lineshapes[i].p[1]**2
+            numerator[i] = (modelL.lineshapes[i].p[1]**2 + modelL.lineshapes[i].p[2]**2)
+            
+    for i in range(modelT.numlineshapes):
+        if modelT.lineshapes[i].type == "Debye":
+            denominator[i] = modelT.lineshapes[i].p[1]
+
+        if (modelT.lineshapes[i].type == "DHO") or (modelT.lineshapes[i].type == "VanVleck") or (modelT.lineshapes[i].type == "BrendelDHO"):             
+            denominator[i] = modelT.lineshapes[i].p[1]**2
+            
+    return prod(numerator)/prod(denominator)
     
-    if (print_ratios == True):
-        set_printoptions(precision=2)
-        print("LST Ratios = ", ratios)
- 
-    return prod(ratios)
 
 ##----------------------------------------------------------------------------------
 ##----- Printout all frequencies in system and left side of gLST equation  --------
 ##----------------------------------------------------------------------------------
 def print_gLST_LHS_stuff(modelL, modelT):
 
-    ratios = zeros(modelL.numlineshapes)
-    sumL = 0
-    sumT = 0 
-    print("             name         |   f    |       freq        |      tau (ps) ")
+    print("longitudinal model:")
     modelL.print_model()
-    
-    print("             name         |   f    |       freq        |      tau (ps) ")
+    print("transverse model:")
     modelT.print_model()    
 
-    if (modelL.numlineshapes == modelT.numlineshapes):
-        gLST = gLST_LHS(modelL, modelT, print_ratios=True)
-        print("LST LHS = %6.2f" % gLST)
+    print_gLST_ratios(modelL, modelT)    
+                
+    print("LST LHS = %6.2f" % gLST_LHS(modelL,modelT))
     
 #-------------------------------------------------------------------------------------------------------------
 def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='linear',yscale='log',ymin=None,ymax=None,show=False,Block=True,longitudinal=False,title=''):
@@ -529,7 +567,7 @@ def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='
     if (xmax == None):
         xmax = max(dataX)
     if (ymin == None):
-        ymin = min(dataYrp)/10
+        ymin = min(dataYrp)/100
     if (ymax == None):
         ymax = max(dataYrp)
     if (xscale == 'log'):
