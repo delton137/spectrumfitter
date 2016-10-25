@@ -39,13 +39,17 @@ class Debye(Lineshape):
         return self.p[1]
     
     def print_params(self):
-        print(u"%20s f =%7.5f \u03C9 = %6.2f 1/cm (%5.2f ps)" % (self.name, self.p[0], self.p[1], self.p[1]/33.333))
+        print(u"%20s f =%7.5f \u03C9 = %6.2f 1/cm (%5.2f ps)" % (self.name, self.p[0], self.p[1], 33.34/(2*3.14159*self.p[1])))
+        
+    def print_params_latex(self):
+        print(u"%20s & %7.5f & %6.2f & %5.2f &   & \\\\" % (self.name, self.p[0], self.p[1], 33.333/(2*3.14159*self.p[1])))
+       
        
 class DHO(Lineshape):
     """Damped harmonic oscillator object"""
     def __init__(self,params=[1,1,1],bounds=[(-float('inf'),+float('inf')),(-float('inf'),+float('inf'))],name="DHO"):
         Lineshape.__init__(self, params, bounds, name)
-        self.pnames = ["f", "wT", "gamma"]
+        self.pnames = ["f", "w", "gamma"]
         self.type = "DHO"
 
     def __call__(self, w):
@@ -61,7 +65,10 @@ class DHO(Lineshape):
         return sqrt( self.p[1]**2 + self.p[2]**2 ) 
     
     def print_params(self):
-        print(u"%20s f =%7.5f \u03C9 = %6.2f + %6.2f i  (%6.3f ps)" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[2])))
+        print(u"%20s f =%7.5f \u03C9 = %6.2f + %6.2f i  (%6.3f ps)" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/(2*3.141*self.p[1])))
+        
+    def print_params_latex(self):
+        print(u"%20s & %7.5f &  %6.2f & %6.3f & %6.2f &  \\\\" % (self.name, self.p[0], self.p[1], 33.34/(2*3.141*self.p[1]), self.p[2] ))
 
     
 class BrendelDHO(Lineshape):
@@ -91,7 +98,10 @@ class BrendelDHO(Lineshape):
         return sqrt( self.p[1]**2 + self.p[2]**2 )
     
     def print_params(self):
-        print( u"%20s f =%7.5f \u03C9 = %6.2f + %6.2f i  (%5.3f ps) \u03C3 = %6.2f cm^-1" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/self.p[2], self.p[3]))
+        print( u"%20s f =%7.5f \u03C9 = %6.2f + %6.2f i  (%5.3f ps) \u03C3 = %6.2f cm^-1" % (self.name, self.p[0], self.p[1], self.p[2],  33.34/self.p[1], self.p[3]))
+        
+    def print_params_latex(self):
+        print( u"%20s & %7.5f & %6.2f & %5.3f & %6.2f  & %6.2f \\\\" % (self.name, self.p[0], self.p[1], 33.34/self.p[1], self.p[2], self.p[3]))
         
 class DistributionOfDebye(Lineshape):
     
@@ -272,6 +282,9 @@ class constant(Lineshape):
     
     def print_params(self):
         print("%20s f =%7.5f" % (self.name, self.p[0]))
+    
+    def print_params_latex(self):
+        print("%20s & %7.5f & & & & \\\\" % (self.name, self.p[0]))
 
 class SpectralModel: 
     """A spectralmodel object is simply a list of lineshape objects"""
@@ -349,14 +362,26 @@ class SpectralModel:
         return (rp/denom, cp/denom)
     
     def print_model(self):
-        """Write out float('inf')o about all of the parameters in the model """
+        """Write out info about all of the parameters in the model """
         for lineshape in self.lineshapes:
             lineshape.print_params()
+            
         set_printoptions(precision=2)
         print( "")
         print( "f-sum of oscillator strengths = %6.2f" % self.fsum())
         print( "")
         print( "RMS error = %6.3f" % self.RMS_error)
+        
+    def print_model_latex(self):
+        """Write out info about all of the parameters in the model in LaTeX form"""
+        print("\\begin{table}")
+        print("     \\begin{tabular}{c c c c c c}")
+        print("name            & $f$ & $\\omega_0$ (cm$^{-1}$) & $\\tau$ (ps) &  $\gamma$ (cm$^{-1}) $  &  $\sigma$ (cm$^{-1}$) \\\\ ")
+        print("\hline") 
+        for lineshape in self.lineshapes:
+            lineshape.print_params_latex()
+        print("     \\end{tabular}}")
+        print("\\end{table}")
     
     def fit_model(self, dataX, datarp, datacp):
     
@@ -392,11 +417,17 @@ class SpectralModel:
         bounds = self.getbounds()
         #optimize.fmin_tnc(diffsq, params, fprime=None,approx_grad=True,args=params,bounds=b,epsilon=1e-08,)
         
-        #resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method='Powell')
+        ##resultobject = optimize.minimize(costfun, x0=params, method='Powell')
+
+        resultobject = optimize.differential_evolution(costfun,bounds,maxiter=2000)  
+        print("diff. evolv. number of iterations = ", resultobject.nit)
+
         resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method='TNC')
-        print("number of iterations = ", resultobject.nit)
+        print("TNC number of iterations = ", resultobject.nit)
         
-        optimize.differential_evolution(costfun,bounds,maxiter=1000)  
+        resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method='SLSQP')
+        print("SLSQP number of iterations = ", resultobject.nit)
+
         #mybounds = MyBounds(bounds=array(bounds))
                 
         #ret = basinhopping(diffsq, params, niter=10,accept_test=mybounds)
@@ -430,9 +461,7 @@ def fit_model_gLST_constraint(modelL, modelT, dataX, Tdatarp, Tdatacp):
             Tdiff = (Tdatarp - Trp)/Tdatarp + (Tdatacp - Tcp)/Tdatacp 
 
             err = dot(Tdiff, Tdiff) + dot(Ldiff, Ldiff)
-            
-            #print("err = ", err)
-            
+                        
             return err
 
         def costfun(params):
@@ -456,9 +485,9 @@ def fit_model_gLST_constraint(modelL, modelT, dataX, Tdatarp, Tdatacp):
                         
             gLSTpenalty = ( gLST_LHS(modelL, modelT) - gLST_RHS )**2
             
-            print(diffsq(paramsL, paramsT) , gLSTpenalty , 100*fsumpenalty)
+            #print(diffsq(paramsL, paramsT) , gLSTpenalty , 100*fsumpenalty)
             
-            return diffsq(paramsL, paramsT) + gLSTpenalty  + 100*fsumpenalty
+            return diffsq(paramsL, paramsT)  + 100*fsumpenalty + gLSTpenalty 
 
         Lparams = modelL.getparams()
         Tparams = modelT.getparams()
@@ -473,9 +502,12 @@ def fit_model_gLST_constraint(modelL, modelT, dataX, Tdatarp, Tdatacp):
         assert len(boundsL) == len(boundsT)
         assert len(params) == len(bounds)
     
-    
-        resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method = 'Powell')#, method='TNC')
+        resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method='TNC')
         print("number of iterations = ", resultobject.nit)
+        
+        resultobject = optimize.minimize(costfun, x0=params, bounds=bounds, method='SLSQP')
+        print("number of iterations = ", resultobject.nit)
+
         
         #optimize.fmin_l_bfgs_b(costfun, bounds=bounds)
         #optimize.differential_evolution(costfun, bounds)  
@@ -503,7 +535,7 @@ def print_gLST_ratios(modelL, modelT):
 
         set_printoptions(precision=2)
         print("LST Ratios = ", ratios)
-        #print("Prod of rations =", prod(ratios))
+        print("Prod of ratios =", prod(ratios))
     else:
         print("Can't compute gLST ratios, number of lineshapes in transverse not equal to number in longitudinal")
     
@@ -534,7 +566,7 @@ def gLST_LHS(modelL,modelT):
 ##----------------------------------------------------------------------------------
 ##----- Printout all frequencies in system and left side of gLST equation  --------
 ##----------------------------------------------------------------------------------
-def print_gLST_LHS_stuff(modelL, modelT):
+def print_gLST_LHS_stuff(modelL, modelT, Tdatarp, Tdatacp):
 
     print("longitudinal model:")
     modelL.print_model()
@@ -542,8 +574,14 @@ def print_gLST_LHS_stuff(modelL, modelT):
     modelT.print_model()    
 
     print_gLST_ratios(modelL, modelT)    
+    
+    eps0    = Tdatarp[0]
+    eps_inf = Tdatarp[-1]
+    gLST_RHS = eps0/eps_inf
                 
     print("LST LHS = %6.2f" % gLST_LHS(modelL,modelT))
+    print("LST RHS = %6.2f" %  gLST_RHS)
+
     
 #-------------------------------------------------------------------------------------------------------------
 def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='linear',yscale='log',ymin=None,ymax=None,show=False,Block=True,longitudinal=False,title=''):
@@ -575,29 +613,29 @@ def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='
     else: 
         plotomegas = linspace(xmin, xmax, 10000)
     
-    if (longitudinal == True):
-        (rp, cp) = model.longeps(plotomegas)
-        denom = dataYrp**2 + dataYcp**2     
-        (dataYrp,dataYcp) = (dataYrp/denom, dataYcp/denom)
-        (xmin,xmax) = (min(dataX),max(dataX))
-        (ymin,ymax) = (min(dataYrp),max(dataYrp))
-    else:
-        (rp, cp) = model(plotomegas)
+    #if (longitudinal == True):
+    #    (rp, cp) = model.longeps(plotomegas)
+    #    denom = dataYrp**2 + dataYcp**2     
+    #    (dataYrp,dataYcp) = (dataYrp/denom, dataYcp/denom)
+    #    (xmin,xmax) = (min(dataX),max(dataX))
+    #    (ymin,ymax) = (min(dataYrp),max(dataYrp))
+    #else:
+    (rp, cp) = model(plotomegas)
     
     # Two subplots, unpack the axes array immediately
     f, (ax1, ax2) = plt.subplots(nrows=2, sharex=True, sharey=False )
     
     ax1.plot(dataX, dataYrp, "ro", plotomegas, rp,'g')
-    ax1.set_title('Real part')
+    #ax1.set_title('Real part')
 
     ax2.plot(dataX, dataYcp, "ro", plotomegas, cp,'g')
-    ax2.set_title('Complex part')
+    #ax2.set_title('Complex part')
+
     #plot all of the components
-    if longitudinal == False:
-        for lineshape in model.lineshapes: 
-            (rpPart, cpPart) = lineshape(plotomegas)
-            ax1.plot(plotomegas, rpPart ,'g--')
-            ax2.plot(plotomegas, cpPart ,'g--')
+    for lineshape in model.lineshapes: 
+        (rpPart, cpPart) = lineshape(plotomegas)
+        ax1.plot(plotomegas, rpPart ,'g--')
+        ax2.plot(plotomegas, cpPart ,'g--')
 
     ax1.set_xscale(xscale)
     ax1.set_xlim([xmin,xmax])
@@ -609,10 +647,20 @@ def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='
     ax2.set_yscale(yscale)
     ax2.set_ylim([ymin,ymax])
     
-    ax1.set_xlabel(r"$\omega$ cm$^{-1}$")
-    ax1.set_ylabel(r"$\varepsilon(\omega)''$")
+    ax1.set_xlabel(r"$\omega$ (cm$^{-1}$)")
+    ax2.set_xlabel(r"$\omega$ (cm$^{-1}$)")
+    
+    
+    if (longitudinal == True):
+        ax1.set_ylabel(r"Re$\lbrace\frac{1}{\varepsilon(\omega)}\rbrace$")
+        ax2.set_ylabel(r"Im$\lbrace\frac{1}{\varepsilon(\omega)}\rbrace$")
+    else:
+        ax1.set_ylabel(r"Re$\lbrace\varepsilon(\omega)\rbrace$")
+        ax2.set_ylabel(r"Im$\lbrace\varepsilon(\omega)\rbrace$")
     
     ax1.set_title(title)
+    
+    
 
    #ax.annotate('local max', xy=(3, 1),  xycoords='data')
 
