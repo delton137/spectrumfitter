@@ -1,5 +1,4 @@
-"Spectrum Fitter" 
-2015 Daniel C. Elton 
+**spectrumfitter** 
 
 The module spectrum_fitter.py provides an obect-oriented framework for fitting dielectric spectra.
 
@@ -16,11 +15,9 @@ There are a few additional python scripts included in this git:
 
 
 
-
-
 The MIT License (MIT)
 
-Copyright (c) 2015 Daniel C. Elton 
+Copyright (c) 2015-2016 Daniel C. Elton 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
