@@ -8,7 +8,8 @@ __status__ = "Development"
 from pylab import *
 from scipy import optimize 
 from numpy import *
-from spectrum_fitter import *
+from spectrumfitter.spectrumfitter import *
+from spectrumfitter.spectralmodel import *
 import pickle 
 
 #---------------------- Load data -------------------------------------
