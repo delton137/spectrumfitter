@@ -1,8 +1,7 @@
 ''' Spectrum_fitter.py : an obect-oriented framework for fitting dielectric spectra. '''
-
 __author__  = "Daniel C. Elton"
 __maintainer__ = "Daniel C. Elton"
-__copyright__ = "Copyright 2015, Daniel C. Elton"
+__copyright__ = "Copyright 2015-2017, Daniel C. Elton"
 __license__ = "MIT"
 __status__ = "Development"
 
@@ -584,7 +583,7 @@ def print_gLST_LHS_stuff(modelL, modelT, Tdatarp, Tdatacp):
 
     
 #-------------------------------------------------------------------------------------------------------------
-def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='linear',yscale='log',ymin=None,ymax=None,show=False,Block=True,longitudinal=False,title=''):
+def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='linear',yscale='log',ymin=None,ymax=None,show=False,Block=True,longitudinal=False,title='',peaks=[]):
     """displays a pretty plot of the real and complex parts of the model and data using matplotlib
 
     args: 
@@ -605,7 +604,7 @@ def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='
     if (xmax == None):
         xmax = max(dataX)
     if (ymin == None):
-        ymin = min(dataYrp)/100
+        ymin = min(dataYrp)/600
     if (ymax == None):
         ymax = max(dataYrp)
     if (xscale == 'log'):
@@ -625,10 +624,10 @@ def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='
     # Two subplots, unpack the axes array immediately
     f, (ax1, ax2) = plt.subplots(nrows=2, sharex=True, sharey=False )
     
-    ax1.plot(dataX, dataYrp, "ro", plotomegas, rp,'g')
+    ax1.plot(dataX, dataYrp, "g", plotomegas, rp,'g')
     #ax1.set_title('Real part')
 
-    ax2.plot(dataX, dataYcp, "ro", plotomegas, cp,'g')
+    ax2.plot(dataX, dataYcp, "g", plotomegas, cp,'g')
     #ax2.set_title('Complex part')
 
     #plot all of the components
@@ -665,4 +664,25 @@ def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='
    #ax.annotate('local max', xy=(3, 1),  xycoords='data')
 
    
+#-----------------------------------------------------------------------
+# Function to find the maxima of a dataset by looking where the sign of the slope changes
+#-----------------------------------------------------------------------
+def find_peaks(dataset,omegas):
+    #Smooth dataset
+    smoothing_length = 5
+    dataset = np.convolve(dataset, np.ones(smoothing_length)/smoothing_length)
+    
+   # lowess = sm.nonparametric.lowess(dataset, omegas, frac=0.5)
+    #dataset = lowess[:,1]
 
+    npoints = len(dataset)
+    data_shift = np.r_[0, dataset]
+    diff = data_shift[0:npoints] - dataset
+    peaks = []
+    npoints = len(omegas) -1 
+    for i in range(0, npoints):
+        if np.sign(diff[i]) != np.sign(diff[i+1]):
+            #check if in useful range
+            if ( 580 <= omegas[i] <= 1000 ) | ( 3000 <= omegas[i] <= 3500 ): #(1500 <= omegas[i] <= 1700)
+                peaks =  peaks + [(omegas[i] + omegas[i+1])/2]
+    return peaks
