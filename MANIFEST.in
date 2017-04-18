@@ -1,0 +1,4 @@
+include README.md
+include examples/*.RI
+include examples/*.dat
+include examples/*.md

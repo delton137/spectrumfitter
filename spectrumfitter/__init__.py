@@ -6,12 +6,9 @@
 
 """
 ## spectrumfitter  
-
-
 """
 
 from .spectrumfitter import *
+from .spectralmodel import SpectralModel
 
-__all__ = [
-    'spectrumfitter'
-]
+__all__ = ['spectrumfitter','spectralmodel']
