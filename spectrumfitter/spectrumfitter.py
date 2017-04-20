@@ -474,8 +474,8 @@ def plot_model(model,dataX,dataYrp,dataYcp,Myhandle,xmin=None,xmax=None,xscale='
     #plot all of the components
     for lineshape in model.lineshapes: 
         (rpPart, cpPart) = lineshape(plotomegas)
-        ax1.plot(plotomegas, rpPart ,'b--')
-        ax2.plot(plotomegas, cpPart ,'b--')
+        ax1.plot(plotomegas, rpPart ,'b--',linewidth=1)
+        ax2.plot(plotomegas, cpPart ,'b--',linewidth=1)
 
     ax1.set_xscale(xscale)
     ax1.set_xlim([xmin,xmax])
