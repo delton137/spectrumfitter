@@ -1,5 +1,5 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://pypi.python.org/pypi/spectrumfitter)
-[![PyPI](https://img.shields.io/pypi/dm/scikit-chem.svg?style=flat-square)](https://pypi.python.org/pypi/spectrumfitter)
+[![PyPI](https://img.shields.io/pypi/dm/spectrumfitter.svg?style=flat-square)](https://pypi.python.org/pypi/spectrumfitter)
 
 # spectrumfitter
 
