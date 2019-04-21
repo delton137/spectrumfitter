@@ -13,11 +13,9 @@ from spectrumfitter.spectralmodel import *
 import pickle 
 
 #---------------------- Load data -------------------------------------
-eps_data = loadtxt(fname='Siegelstein.RI')
-#eps_data = loadtxt(fname='Water 253 K.RI')
-#eps_data = loadtxt(fname='Water 300 K.RI')
+eps_data = loadtxt(fname='water_full_Siegelstein.RI')
 
-Raman_data = loadtxt(fname='figure3_1995_Castner_Raman_data.dat')
+Raman_data = loadtxt(fname='water_300K_Raman_Castner.dat')
 
 
 #----------------process dielectric data ------------------------------
@@ -46,7 +44,7 @@ Raman = Raman_data[0:maxw,1]/5000
 
 ##------------ Define fit functions & parameters -----------------------
 ##transverse model
-modelT = spectralmodel()
+modelT = SpectralModel()
 modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
 #modelT.add(Debye([71,  .5]   ,[(1,80)   ,(.4,.8)  ],"Debye"))
 modelT.add(Debye([2,   6.44]   ,[(.01,10)   ,(1,15)   ],"2nd Debye"))
@@ -67,7 +65,7 @@ modelT.add(DHO([.3,650,100],[(.01,100),(520,750),(1,1000)],"DHO L2"))
 modelT.add(constant([2]       ,[(1,11)],"eps inf"))
 
 ##longitudinal model
-modelL = spectralmodel()
+modelL = SpectralModel()
 modelL.add(Debye([1 , 10 ]   ,[(.001,1)  , (.5 ,50)]   ,"Debye"))
 modelL.add(Debye([.1 , 10 ]   ,[(0,2)  , (.5 ,50)]   ,  "2nd Debye"))
 #modelL.add(DHO([2,60 ,60 ]   ,[(0,5)   ,(10  ,100)  ,(1  ,400) ],"H-bond bend"))
@@ -80,7 +78,7 @@ modelL.add(constant([2]       ,[(1,10)],"eps inf"))
 
 
 #Raman model
-modelR = spectralmodel()
+modelR = SpectralModel()
 #modelR.add(DHO([.1,65,100]   ,[(0,1)   ,(10 ,100)  ,(10 ,900) ],"H-bond bend"))
 #modelR.add(DHO([.1,150,100]   ,[(0,1)   ,(100 ,200)  ,(10 ,900) ],"H-bond str."))
 modelR.add(DHO([.1,433,250]  ,[(0,.5),(300,500)  ,(.1,400) ],"L1"))
